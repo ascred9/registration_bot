@@ -45,7 +45,9 @@ class Bot:
                     markup.width = 1
                     markup.add(
                         types.InlineKeyboardButton("Хочу изменить" + emoji.emojize(":scroll:"),
-                                                   callback_data="wanna_change")
+                                                   callback_data="wanna_change"),
+                        types.InlineKeyboardButton("Назад" + emoji.emojize(":BACK_arrow:"),
+                                                   callback_data="back_to_start")
                     )
                     self.bot.send_message(call.message.chat.id, "Вы уже зарегестрированы!\n" + str(user),
                                           reply_markup=markup)
