@@ -23,7 +23,8 @@ class Bot:
         def callback_handler(call):
             if call.data == "info":
                 self.bot.delete_message(call.from_user.id, call.message.message_id)
-                text = "Наш курс заключается в ..."
+                with open("data/about.txt", 'rb') as f:
+                    text = f.read()
                 markup = types.InlineKeyboardMarkup()
                 markup.width = 1
                 markup.add(
@@ -113,5 +114,6 @@ class Bot:
 
 
 if __name__== '__main__':
+    db.Database.read_all()
     bot = Bot()
     bot.start()
