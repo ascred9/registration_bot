@@ -60,6 +60,8 @@ class Bot:
                     if user.get_confirm():
                         self.bot.send_message(call.message.chat.id, "Вы уже подтверждены!\n" + str(user),
                                               reply_markup=self.start_markup())
+                        return True
+
                     markup = types.InlineKeyboardMarkup()
                     markup.width = 1
                     markup.add(
