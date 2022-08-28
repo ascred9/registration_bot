@@ -1,0 +1,6 @@
+{'id': 178959512, 'is_bot': False, 'first_name': 'Черный', 'username': 'sansopanso', 'last_name': 'Пластелин'}
+{'id': 899124117, 'is_bot': False, 'first_name': 'Nikita', 'username': 'hermyse', 'last_name': 'Okhotnikov'}
+{'id': 829365853, 'is_bot': False, 'first_name': 'Mikhail', 'username': None, 'last_name': None}
+{'id': 640424251, 'is_bot': False, 'first_name': 'Yana', 'username': 'dustanddesky', 'last_name': 'Savchenko'}
+{'id': 1702643924, 'is_bot': False, 'first_name': 'sergei', 'username': 'sergei0931', 'last_name': None}
+{'id': 91551104, 'is_bot': False, 'first_name': 'Νικήτας', 'username': 'nikitap', 'last_name': None}
