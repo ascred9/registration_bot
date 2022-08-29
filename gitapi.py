@@ -6,7 +6,7 @@ class GitApi:
     env = environs.Env()
     env.read_env('data/.env')
     g = github.Github(env('GIT_TOKEN'))
-    org_name = 'NSU-test' #"NSU-Programming"
+    org_name = "NSU-Programming"
     org = g.get_organization(org_name)
 
     @classmethod
