@@ -3,6 +3,7 @@ from telebot import TeleBot, types
 import emoji
 
 import database as db
+import gitapi
 
 teachers = {
     178959512:  [21313, 21314],  # A. Semenov
@@ -19,6 +20,7 @@ class Bot:
         env.read_env('data/.env')
         BOT_TOKEN = env('BOT_TOKEN')
         self.bot = TeleBot(token=BOT_TOKEN)
+        self.wait_invitations = []
 
         @self.bot.message_handler(commands=['start'])
         def start_chat(message):
@@ -104,7 +106,7 @@ class Bot:
                     users.extend(list(filter(lambda u: u.get_confirm(), db.Database.get_users_from_group(group))))
 
                 if len(users) == 0:
-                    self.bot.send_message(call.message.chat.id, "Подтвержденных тудентов нет!",
+                    self.bot.send_message(call.message.chat.id, "Подтвержденных студентов нет!",
                                           reply_markup=self.admin_start_markup())
                     return True
 
@@ -177,6 +179,7 @@ class Bot:
             user = users[int(message.text) - 1]
             db.Database.change_data(user.get_ind(), ["confirm", True])
             self.bot.send_message(message.chat.id, "Студент подтвержден!", reply_markup=self.admin_start_markup())
+            gitapi.GitApi.invite(user.get_email())
 
         def process_user_remove(message, users, old_msg_id):
             self.bot.delete_message(message.from_user.id, old_msg_id)
@@ -188,6 +191,7 @@ class Bot:
             user = users[int(message.text) - 1]
             db.Database.change_data(user.get_ind(), ["confirm", False])
             self.bot.send_message(message.chat.id, "Студент удален!", reply_markup=self.admin_start_markup())
+            #gitapi.GitApi.remove_user(user.get_email())
 
     def start(self):
         self.bot.infinity_polling()
@@ -217,9 +221,3 @@ class Bot:
     def auth_admin(message):
         if message.from_user.id in teachers.keys():
             return True
-
-
-if __name__== '__main__':
-    db.Database.read_all()
-    bot = Bot()
-    bot.start()

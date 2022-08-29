@@ -114,9 +114,8 @@ def connection(db_name = "users"):
 
 
 class Database:
-    def __init__(self):
-        self.connect = None
-        self.cursor = None
+    connect = None
+    cursor = None
 
     @classmethod
     @connection()
