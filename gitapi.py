@@ -1,4 +1,5 @@
 import environs
+import time
 import github
 
 
@@ -8,28 +9,29 @@ class GitApi:
     g = github.Github(env('GIT_TOKEN'))
     org_name = "NSU-Programming"
     org = g.get_organization(org_name)
+    team_name = "Students"
+    teams = [org.get_team_by_slug(team_name)]
 
     @classmethod
     def invite(cls, mail: str):
-        for org in cls.g.get_user().get_orgs():
-            if org.login == cls.org.login:
-                org.invite_user(email=mail)
-                break
+        cls.org.invite_user(email=mail, teams=cls.teams)
 
     @classmethod
-    def remove_user(cls, mail: str):
-        for org in cls.g.get_user().get_orgs():
-            if org.login == cls.org.login:
-                for user in cls.org.invitations():
-                    print(user.email)
-                    if mail == user.email:
-                        # cls.org.cancel_invitation("sansopanso")
-                        break
-                break
+    def is_user_pending(cls, mail: str):
+        for user in cls.org.invitations():
+            if mail == user.email:
+                #cls.org.cancel_invitation(mail)
+                return True
+        return False
 
-# print(type(g.get_user("sansopanso")))
-# print(g.get_organization("NSU-Programming"))
-# for org in g.get_user().get_orgs():
-#    print(org.login)
-# for user in org.get_members():
-#    print(user)
+
+    @classmethod
+    def convert_student_to_outside_collaborator(cls, username: str):
+        cls.org.convert_to_outside_collaborator(cls.g.get_user(username))
+
+    @classmethod
+    def update_invitations(cls, sleep_time):
+        while True:
+            for user in cls.teams[0].get_members():
+                cls.convert_student_to_outside_collaborator(user.login)
+            time.sleep(sleep_time)

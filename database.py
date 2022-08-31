@@ -133,16 +133,13 @@ class Database:
     @connection()
     def get_users_from_group(cls, group):
         cls.cursor.execute(f"SELECT * FROM users WHERE grp = {group}")
-        datas = cls.cursor.fetchall()
-        if not datas:
-            return []
-        else:
-            users = []
-            for data in datas:
-                user = User()
-                user.set_data(data)
-                users.append(user)
-            return users
+        users_data = cls.cursor.fetchall()
+        users = []
+        for user_data in users_data:
+            user = User()
+            user.set_data(user_data)
+            users.append(user)
+        return users
 
     @classmethod
     @connection()
@@ -180,9 +177,12 @@ class Database:
     def read_all(cls):
         cls.cursor.execute("SELECT * FROM users")
         users_data = cls.cursor.fetchall()
+        users = []
         for user_data in users_data:
-            print(user_data)
-        return True
+            user = User()
+            user.set_data(user_data)
+            users.append(user)
+        return users
 
     @classmethod
     @connection()

@@ -7,12 +7,13 @@ import gitapi
 
 teachers = {
     178959512:  [21313, 21314],  # A. Semenov
-    899124117:  [21307, 21308],  # N. Okhotnikov
+    899124117:  [21307, 21310, 21311],  # N. Okhotnikov
     829365853:  [21301, 21302],  # M. Tolkachev
     640424251:  [21306, 21309],  # Y. Savchenko
-    1702643924: [21305, 21310, 21311, 21312],  # S. Gribanov
     91551104:   [21303, 21304]   # N. Petrov
 }
+
+ultra_teacher = 1702643924  # S. Gribanov
 
 class Bot:
     def __init__(self):
@@ -84,8 +85,14 @@ class Bot:
                 self.bot.register_next_step_handler(msg, process_name)
             elif call.data == "confirm_user":
                 users = []
-                for group in teachers.get(call.from_user.id):
-                    users.extend(list(filter(lambda u: not u.get_confirm(), db.Database.get_users_from_group(group))))
+                if call.from_user.id in teachers.keys():
+                    for group in teachers.get(call.from_user.id):
+                        users_from_group = list(filter(lambda u: not u.get_confirm(),
+                                                       db.Database.get_users_from_group(group)))
+                        users.extend(list(filter(lambda u: u.get_email().endswith("@g.nsu.ru"),
+                                                 users_from_group)))
+                elif call.from_user.id == ultra_teacher:
+                    users.extend(db.Database.read_all())
 
                 if len(users) == 0:
                     self.bot.send_message(call.message.chat.id, "Новых студентов нет!",
@@ -118,7 +125,6 @@ class Bot:
                                             "\n*!Введите ерунду, если хотите вернуться назад!*",
                                             parse_mode="Markdown")
                 self.bot.register_next_step_handler(msg, process_user_remove, users, msg.id)
-
 
         def process_name(message):
             user = db.User()
@@ -165,9 +171,8 @@ class Bot:
                     self.bot.send_message(master_id, "Новый студент")
                     return True
 
-                # in strange case send it to all masters
-                #for master_id in teachers.txt.keys():
-                #    self.bot.send_message(master_id, "Новый странный студент. ")
+                # in strange case send it to ultra master:
+                self.bot.send_message(ultra_teacher, "Новый странный студент. Странная почта или странная группа!")
 
         def process_user_confirm(message, users, old_msg_id):
             self.bot.delete_message(message.from_user.id, old_msg_id)
@@ -177,6 +182,7 @@ class Bot:
                 return True
 
             user = users[int(message.text) - 1]
+
             db.Database.change_data(user.get_ind(), ["confirm", True])
             self.bot.send_message(message.chat.id, "Студент подтвержден!", reply_markup=self.admin_start_markup())
             gitapi.GitApi.invite(user.get_email())
@@ -190,8 +196,18 @@ class Bot:
 
             user = users[int(message.text) - 1]
             db.Database.change_data(user.get_ind(), ["confirm", False])
-            self.bot.send_message(message.chat.id, "Студент удален!", reply_markup=self.admin_start_markup())
-            #gitapi.GitApi.remove_user(user.get_email())
+            text = "Студент удален! *Учтите, вы сами должны подчистить гит-организацию от студента!* "
+            if gitapi.GitApi.is_user_pending(user.get_email()):
+                text += "Студент еще не принял приглашение. Удали скорее его из Pending Invitations! Его почта: " \
+                        + user.get_email() + ". Если ты задержался, и почты студента нет среди приглашенных," \
+                                             " то следует его искать уже в Outside Collaborators." \
+                                             " Его ник примерно следующий: " + user.get_git()
+            else:
+                text += "Кажется, студент уже принял приглашение и, скорее всего," \
+                        "уже переведен в Outside Collaborators, ищи его там. Его ник примерно следующий: " \
+                        + user.get_git()
+            self.bot.send_message(message.chat.id, text, reply_markup=self.admin_start_markup(),
+                                  parse_mode="Markdown")
 
     def start(self):
         self.bot.infinity_polling()
@@ -219,5 +235,5 @@ class Bot:
 
     @staticmethod
     def auth_admin(message):
-        if message.from_user.id in teachers.keys():
+        if message.from_user.id in teachers.keys() or message.from_user.id == ultra_teacher:
             return True
